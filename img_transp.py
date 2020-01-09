@@ -79,12 +79,12 @@ client.exec_command("convert %s rgba:%s" % (img_output, smb_output))
 client.close()
 
 # get back file
-sftp.get(remotepath='//home//' + bs_user + '//' + smb_output, localpath=os.getcwd() + '\\' + smb_output)
+sftp.get(remotepath='//home//' + bs_user + '//' + smb_output, localpath=os.getcwd() + '\\' + img_source + rgba_format)
 sftp.close()
 
 
 # put size to file header
-f = open(smb_output, "rb+")
+f = open(img_source + rgba_format, "rb+")
 byte_arr = struct.pack('<i', int(width))
 f.seek(0)
 f.write(byte_arr)
