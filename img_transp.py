@@ -20,6 +20,9 @@ rgba_format = '.smb'
 
 # Convert white background into alpha channel in PNG files
 go_transparent = True
+# If need enlarge image
+go_enlarge = False
+enlarge_to = 0.2 # scale
 
 
 filelist = [f for f in os.listdir('.') if os.path.isfile(f)]
@@ -31,13 +34,25 @@ for f in filelist:
         img_upload = img_output
         smb_output = img_source.replace(img_format, rgba_format)
 
+        if os.path.exists(smb_output):
+            print(smb_output,' exists.')
+            continue
+
         paramiko.util.log_to_file('history.log')
 
+        img = Image.open(img_upload)
+        width, height = img.size
 
-        if go_transparent:
-            img = Image.open(img_upload)
+        if go_transparent:            
             img = img.convert("RGBA")
             datas = img.getdata()
+            if go_enlarge:
+                rimg = Image.new('RGBA',(width+int(width*enlarge_to), height+int(height*enlarge_to)),(0,0,0,0))
+                rimg.paste(img,(int(width*enlarge_to),int(height*enlarge_to)))
+                datas = rimg.getdata()
+            
+                                        
+
 
             newData = []
             for item in datas:
@@ -46,40 +61,49 @@ for f in filelist:
                 else:
                     newData.append(item)
 
-            img.putdata(newData)
-            img.save(img_source, "PNG")
+            if not go_enlarge:
+                img.putdata(newData)
+                img.save(img_source, "PNG")
+            else:
+                rimg.putdata(newData)
+                rimg.save(img_source, "PNG")
+                    
 
         if go_transparent:
             img_output = img_source
 
 
-        im = Image.open(img_output)
-        width, height = im.size
+        print('%s => %s [w=%d, h=%d]' % (img_source, smb_output, width, height))
+        transport = paramiko.Transport(bs_host, bs_port)
+        transport.connect(username=bs_user, password=bs_pass)
+        sftp = paramiko.SFTPClient.from_transport(transport)
+        sftp.put(localpath=os.getcwd()+'\\'+img_output, remotepath='//home//' + bs_user + '//' + img_output)
 
+        # convert file on server
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(bs_host, bs_port, bs_user, bs_pass)
+        client.exec_command("convert %s rgba:%s" % (img_output, smb_output))
+        client.close()
 
+        # get back file
+        success = False
+        while not success:
+            try:
+                sftp.file(smb_output, 'r')
+                success = True
+            except:
+                print('error')                    
 
-        # delete exists file
-        if os.path.isfile(smb_output):
-            os.remove(smb_output)
-            
-        while not os.path.exists(smb_output):
+        sftp.get(remotepath='//home//' + bs_user + '//' + smb_output, localpath=os.getcwd() + '\\' + smb_output)
+        
+        sftp.close()
+    
+        while os.path.getsize(smb_output) == 0:
             print('%s => %s [w=%d, h=%d]' % (img_source, smb_output, width, height))
-            if os.path.exists(smb_output) and os.path.getsize(smb_output) == 0:
-                break
-            # put file to server
             transport = paramiko.Transport(bs_host, bs_port)
             transport.connect(username=bs_user, password=bs_pass)
             sftp = paramiko.SFTPClient.from_transport(transport)
-            sftp.put(localpath=os.getcwd()+'\\'+img_output, remotepath='//home//' + bs_user + '//' + img_output)
-
-            # convert file on server
-            client = paramiko.SSHClient()
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            client.connect(bs_host, bs_port, bs_user, bs_pass)
-            client.exec_command("convert %s rgba:%s" % (img_output, smb_output))
-            client.close()
-
-            # get back file
             sftp.get(remotepath='//home//' + bs_user + '//' + smb_output, localpath=os.getcwd() + '\\' + smb_output)
             sftp.close()
 
