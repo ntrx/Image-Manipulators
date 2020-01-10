@@ -19,10 +19,11 @@ img_format = '.png'
 rgba_format = '.smb'
 
 # Convert white background into alpha channel in PNG files
-go_transparent = True
+go_transparent = False
 # If need enlarge image
 go_enlarge = False
 enlarge_to = 0.2 # scale
+
 
 
 filelist = [f for f in os.listdir('.') if os.path.isfile(f)]
@@ -108,14 +109,32 @@ for f in filelist:
             sftp.close()
 
 
-        # put size to file header
-        f = open(smb_output, "rb+")
+        # create output dir
+        dir_name = 'output'
+        if not os.path.exists(dir_name):
+            os.mkdir(dir_name)
+        # put size to file header with creating new file
+        f = open(dir_name+'\\'+smb_output, "wb+")
         byte_arr = struct.pack('<i', int(width))
         f.seek(0)
         f.write(byte_arr)
         byte_arr = struct.pack('<i', int(height))
         f.seek(4)
         f.write(byte_arr)
+        byte_arr = struct.pack('<d', 0)
+        f.write(byte_arr)
         f.close()
+
+        out = open(smb_output, 'rb+')       
+
+        first = True
+        with open(dir_name + '\\' + smb_output, 'ab+') as output:
+            if first:
+                output.seek(16)
+                first = False
+            output.write(out.read())
+        out.close()
+        output.close()
+
 
 
