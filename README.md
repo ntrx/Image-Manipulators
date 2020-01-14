@@ -1,11 +1,15 @@
-Image (PNG) transparent maker and convertor to RGBA format for one files
+Here is some scripts for image processing for work
 
-Required modules: Python 3.5+, paramiko (for remote converting), PIL, (ImageMagick installed on external server)
+All scripts have settings in header and works with all files in folder (which files is actually is based on extension which setups in settings)
 
-Steps to convert into RGBA (smb):
-1. put script to dir with PNG files and run after settings setup.
+Requires: Python 3.5+, paramiko (for ssh), PIL (image processing), some default modules.
+Input: png file(s) or rgba file(s)
 
-Steps to convert RGBA (smb) to png:
-1. run smb_png.py in directory with *.smb files
-
-(additional for specified format, scripts adding img size to first 8 bytes of file)
+alpha and fill.py:
+ exchange white color with alpha channel (transparency color) and others color with user selected color, after it fill figure which we got and fill it with another selected color.
+ 
+ img_transp.py:
+ exchange white color with alpha channel (transparency color) and create RGBA file with additional 16 bytes in header with size in first 8 bytes (9-16 bytes is reserved)
+ 
+ smb_png.py:
+   try to extract RGBA format to png
