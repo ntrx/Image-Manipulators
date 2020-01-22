@@ -57,8 +57,16 @@ for f in filelist:
 
             newData = []
             for item in datas:
-                if item[0] == 255 and item[1] == 255 and item[2] == 255:
-                    newData.append((255, 255, 255, 0))
+                '''
+                    NATO colours:
+                    white -> alpha channel = 0,0,0,0
+                    black: 255, 255, 255, 255
+                    Blue: 128, 224, 255, 255
+                    Green: 170, 255, 170, 255
+                    Red: 255, 128, 128, 255
+                '''
+                if item[0] == 128 and item[1] == 224 and item[2] == 255:
+                    newData.append((255, 128, 128, 255))
                 else:
                     newData.append(item)
 
@@ -114,7 +122,7 @@ for f in filelist:
         if not os.path.exists(dir_name):
             os.mkdir(dir_name)
         # put size to file header with creating new file
-        f = open(dir_name+'\\'+smb_output, "wb+")
+        f = open(dir_name+'\\r_'+smb_output, "wb+")
         byte_arr = struct.pack('<i', int(width))
         f.seek(0)
         f.write(byte_arr)
@@ -128,7 +136,7 @@ for f in filelist:
         out = open(smb_output, 'rb+')       
 
         first = True
-        with open(dir_name + '\\' + smb_output, 'ab+') as output:
+        with open(dir_name + '\\r_' + smb_output, 'ab+') as output:
             if first:
                 output.seek(16)
                 first = False
