@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
 # Image transparent maker and convertor to RGBA format
+# How to use:
+#   1.  set up #server settings 
+#   2.  put .png files in same directory with this script
+#   3.  launch this script
+#   4.  output file will be saved to /output directory
 
 
 from PIL import Image
